@@ -13,7 +13,7 @@ for line in sys.stdin:
     # 处理每一行
 
 # 注意 机考中默认给的是 line.split()，返回的是list
-#所以实际是 list = line.split()
+# 所以实际是 list = line.split()而非 str = line.split()
 
 # 读取一行，且保留换行符（需用 .strip() 去除）
 n = sys.stdin.readline().strip()

@@ -1,40 +1,7 @@
 import sys
 import os
 
-import os
 
-def get_filenames_without_extension(directory):
-    """
-    获取指定文件夹中所有文件的文件名（不包括扩展名）
-
-    :param directory: 文件夹路径
-    :return: 包含文件名（不包括扩展名）的列表
-    """
-    filenames = []
-    
-    # 遍历指定文件夹中的所有文件和子文件夹
-    for root, dirs, files in os.walk(directory):
-        print(root, dirs,files)
-        for file in files:
-            # 分离文件名和扩展名
-            filename, _ = os.path.splitext(file)
-            filenames.append(filename)
-    
-    return filenames
-
-# 指定要遍历的文件夹路径
-directory_path = r'C:\Users\PC\Desktop\热缩套管第二批2026.1.19\output_clean'  # 请将这里替换为你的文件夹路径
-
-# 获取文件名（不包括扩展名）
-filenames_without_extension = get_filenames_without_extension(directory_path)
-
-max_n = max(map(lambda x:len(x),filenames_without_extension))
-
-# 打印结果
-for i in range(0,len(filenames_without_extension),4):
-    row = filenames_without_extension[i:i+4]
-    row = list(map(lambda x: "{x:<{max_n}s}".format(x=x, max_n=max_n), row))
-    print(" ".join(row))
 
 
 # var1 = 'Hello World!'
@@ -65,22 +32,41 @@ for i in range(0,len(filenames_without_extension),4):
 
 # dp[i] 金额对于的最少硬币数
 # 初始条件为，dp[coin] = 1
-# 递推式：
+# 递推式:
 # dp[i] =  假设金额为i， 遍历每个硬币并计数一个硬币
 # 则剩余的金额为i-coin， 而i-coin的金额是已经在之前的
 # 递推已经记录，直接引用即可。
-# 最后则用将dp[i]   现变量对应的值+减去变量后对应的状态（已记录
+# 最后则用将dp[i]   现变量对应的值+减去变量后对应的状态(已记录
+
+# n是金额p， m是物品数量
+n, m = map(int, sys.stdin.readline().strip().split())
 
 
-n,m = map(int,sys.stdin.readline().strip().split())
-# 对应dp[i][j]满意度
-# n是预算，m是物品数量
-dp = [[0 for i in range(n+1)] for j in range(m+1)]
 
+# 记录每个物品的价格、满意度(价格*重要度）、主附件
 list1 = []
 for i in range(m):
-    a,b,c = map(int,sys.stdin.readline().strip().split())
-    list1.append([a, b, c]) 
+    a, b, c = map(int,sys.stdin.readline().strip().split())
+    p, v, q = [a, a*b, c] 
+    list1.append([p, v, q]) 
+
+# 记录主件对应的附件
+list2 = []*m
+for i in range(m):
+    if list1[i][2] !=0:
+        list2[list1[i][2]].append(i)
+
+'''
+初始化
+边界确定，物品数量:0~m;容量(金额）:0~n;
+求最大值，则他最基础的条件为什么都不选(对应dp[i]=0)
+或者金额为0(对应dp[0]=0)
+'''
+# 对应dp[i]=满意度，i为金额数
+dp = [[0 for i in range(n+1)] ]
+
+
+
 
 # 初始条件为使用单个物品的满意度
 for i in list1:
