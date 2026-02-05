@@ -1,70 +1,70 @@
+from re import I
 import sys
 
-
-def IP_legal(IP: str):
-    list = IP.strip().split('.')
-    if "" in list or len(list) != 4:
+def is_prime(num):
+    if num == 2:
+        return True
+    elif num % 2 == 0:
         return False
-    for i in list:
-        if int(i) < 0 or int(i) >255:
-            return False
-    
-    return True
-
-def yanma_legal(IP: str):
-    if IP_legal(IP):
-        list1 = list(map(int,IP.strip().split('.')))
-        s = ''.join('{:08b}'.format(i) for i in list1)
-        if s == '0'*32 or s == '1'*32:
-            print(s)
-            return False
-        count1 = s.count('01')      
-        if count1 >= 1:
-            print(s)
-            return False
-        else:
-            return True
     else:
-        return False 
+        i = 3
+        while i*i < n:
+            if num % i ==0:
+                return False
+        return True
 
-def IP_classfy(IP:str):
-    if IP_legal(IP):
-        list1 = list(map(int,IP.strip().split('.')))
-        if 1 <= list1[0] <= 126:
-            return "A"
-        if 128 <= list1[0] <= 191:
-            return "B"
-        if 192 <= list1[0] <= 223:
-            return "C"
-        if 224 <= list1[0] <= 239:
-            return "D"
-        if 240 <= list1[0] <= 255:
-            return "E"
+def DFS(node,visited,graph,match_odd):
+    # 查找node 是否被访问过，防止形成回路无限循环
+    if node not in visited:
+        visited.append(node)
+        # 按某种顺序查找邻接点
+        for even_index in graph.get(node,[]):
+            # 若不为空，即有邻接点
+            # 如果邻接点没有构建匹配，则构建边
+            if match_odd[even_index] != -1:
+                match_odd[even_index] =  node
+                return True
+            # 如果邻接点有构建匹配，
+            else:
+                # 检查邻接点的邻接点能不能构建匹配
+                # 能，递归
+                if DFS(match_odd[even_index],visited,graph,match_odd):
+                    match_odd[even_index] = node
+            # 若为空，即没有邻接点，返回False
+            return False
 
-def IP_privite(IP:str):
-    if IP_legal(IP):
-        list1 = list(map(int,IP.strip().split('.')))
-        if list1[0] == 10:
-            return True
-        if list1[0] == 172 and 16 <= list1[1] <= 31:
-            return True
-        if list1[0] == 192 and list1[1] == 168:
-            return True
+n = int(input())
+l = list(map(int,input().split()))
 
-name = ['A', 'B', 'C', 'D','E','wrong', 'privite']
-dict1 = dict.fromkeys(name,0)            
-readall = sys.stdin.read().splitlines()
-for line in readall:
+odd = []
+even = []
 
-    ip, yanma = line.strip().split('~')
-    if not IP_legal(ip) or not yanma_legal(yanma):
-        dict1['wrong'] += 1
-        
+for i in l:
+    if i % 2 == 0 :
+        even.append(i)
     else:
-        key = IP_classfy(ip)
-        dict1[key] += 1
-        if IP_privite(ip):
-            dict1['privite'] += 1
+        odd.append(i)
+graph = {}
+
+for i, num1 in enumerate(odd):
+    for j, num2  in enumerate(even):
+        if is_prime(num1 + num2):
+            if i not in graph:
+                graph[i] = [j]
+            else:
+                graph[i].append(j)
 
 
-print(' '.join([str(i) for i in dict1.values()]))
+match_odd = [-1]*len(even)
+
+for i, num_odd in enumerate(odd):
+    visited = []
+    DFS(num_odd,visited,graph,match_odd)
+
+max = 0
+for i in match_odd:
+    if i != -1:
+        max += 1
+
+
+print(max)
