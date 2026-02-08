@@ -63,6 +63,12 @@ dp[主1]+V(方案二) 则包含了两个主1的价值，发生了重复
 - 举例推导dp数组
 - 初始化
 
+## 多重背包问题
+
+1 使用set的数据结构 
+无重复的要求，不要求有序
+请使用set()，set 是一种基于哈希表实现的数据结构，其 add（插入）和 in（查找）操作的平均时间复杂度都是 O(1)
+
 ## 最长严格单调递增子序列
 
 最优时间时间复杂度
@@ -80,11 +86,12 @@ def bisnary_search(arr,target):
     while l < r:
         m = l + (r-l)//2   #虽然pyhton不会int溢出，但是为了规范，要写
         if target <= arr[m]:
-            r = m
+            r = m            # 因为右边是开区间，所以可以取m
         elif arr[m] < target:
-            l = m+1
+            l = m+1            # 因为左边是闭区间
     # 循环结束的条件 l=r，此时arr[m] < target < arr[l]
-    # 返回第一个大于等于target的位置,使用l、r都可以，但语义为target的值在左侧 target <= arr[ r , len )
+    # 返回第一个大于等于target的位置,使用l、r都可以，但语义为target的值在左侧 
+    # target <= arr[ r , len )
     return l  
 
 

@@ -4,26 +4,31 @@
 
 ```python
 import sys
-# 一次性读取所有输入并按行分割
-lines = sys.stdin.read().splitlines()
+# 一次性读取所有输入
+lines = sys.stdin.read()
 
-# 或者逐行读取（适用于不确定行数的情况）
+# 一次性读取所有输入并按行分割,含有换行符
+lines = [line.strip() for line in sys.stdin.readlines()]
+
+# 或者逐行读取（适用于不确定行数的情况），流式输入
 for line in sys.stdin:
     line = line.strip()
     # 处理每一行
 
-# 注意 机考中默认给的是 line.split()，返回的是list
-# 所以实际是 list = line.split()而非 str = line.split()
-
 # 读取一行，且保留换行符（需用 .strip() 去除）
 n = sys.stdin.readline().strip()
-
 # while与读一行的方法结合实现逐行读取
 while Ture:
     try:
         n = sys.stdin.readline().strip()
     except:
         break
+
+    
+# 注意 机考中默认给的是 line.split()，返回的是list
+# 所以实际是 list = line.split()而非 str = line.split()
+
+
 ```
 
 | 特性 | `sys.stdin.read().splitlines()` | `for line in sys.stdin:` |
