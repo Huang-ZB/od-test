@@ -1,46 +1,112 @@
 import sys
 import os
 
-# 自动检测是否在本地调试（存在 test.txt 且未被 OJ 环境限制）
+
 if __name__ == '__main__' and os.path.exists('test.txt') and 'ONLINE_JUDGE' not in os.environ:
     sys.stdin = open('test.txt', 'r')
 
+def find_0(M):
+    for i in range(9):
+        for j in range(9):
+            if M[i][j] == 0:
+                return (i,j)    
+    
+def chech_M(M):
+    for i in range(9):
+        row = M[i]
+        row = set(row)
+        if len(row) < 9:
+            return False # 存在重复
+    for j in range(9):
+        col = [row[j] for row in M]
+        col = set(col)
+        if len(col) < 9:
+            return False
+    for i in range(0,9,3):
+        for j in range(0,9,3):
+            small_M = M[i][j:j+3] + M[i+1][j:j+3] + M[i+2][j:j+3]
+            small_M = set(small_M)
+            if len(small_M) < 9 :
+                return False
+    return True
 
-lines = [line.strip().split() for line in sys.stdin.readlines()]
-h,w = list(map(int,lines[0]))
-M = []
-for i in lines[1:]:
-    row = list(map(int,i))
-    M.append(row)
-target = (h-1,w-1)
+def DFS(start_node_index, graph, visted, path):
+    # 该题的DFS实际是一个无根节点的多叉树
+    # 初始化 标记访问 并为该节点选择一个数字
+    visited.add(start_node_index)
+    for i in range(1,10):
+        path.append(i) # 为该层添加一个决策
 
+        # 遍历下一个层
+        next_node_index = start_node_index +1
+        if next_node_index != len(zero_node_graph):
+            # 如果还有空没填
+            DFS(next_node_index,graph, visted, path)
+        else:
+            # 如果== 说明已经遍历完
+            for i in range(len(zero_node_graph)):
+                di , dj = zero_node_graph[i]
+                M[di][dj] = path[i]
+            if chech_M(M):
+                return M
+                break
+            else:
+                path.pop()
+    return None
+
+M = [list(map(int, line.strip().split())) for line in sys.stdin.readlines()]
+
+legal = [i for i in range(1,10)]
+
+zero_node_graph = []
+for i in range(9):
+    for j in range(9):
+        if M[i][j] == 0:
+            zero_node_graph.append((i,j))
+path = []
 visited = set()
-step = [(-1,0), (1,0), (0,1), (0,-1)]
-def DFS(start, M , visited, target):   
-    cur_node = None
-    # 终止条件 到达目标点
-    stack = [(start,[start])]
-    while cur_node != target:
-        cur_node,path = stack[-1]
-        visited.add(cur_node)
-        for way in step:
-            i , j = way
-            if cur_node[0]+i >= h or cur_node[0]+i < 0 or cur_node[1]+j >= w or cur_node[1]+j < 0:
-                continue
-            if M[cur_node[0]+i][cur_node[0]+j]  == 1:
-                continue
-            if M[cur_node[0]+i][cur_node[0]+j]  == 0:
-                # 弹出处理的节点
-                stack.pop()
-                next = (cur_node[0]+i, cur_node[0]+j)
-                path = path + [next]    
-                stack.append((next,path))
-    # cur_node == target跳出循环
-    return stack[0][1]
-
-list1 = DFS((0,0), M, visited, target)
-
-for i in list1:
-    print(i)
+new_M = DFS(0, zero_node_graph,visited,path)
+print(new_M)
 
 
+
+# # 检查每行没有被填入的数字
+# list_row = []
+# for di in range(9):
+#     row = M[di]
+#     temp_set = set()
+#     # 查找缺的数字
+#     for i in legal:
+#         if i not in row:
+#             temp_set.add(i)
+#     # 如果只有一个空位需要填，则弹出，并填入
+#     if len(temp_set) == 1:
+#         for dj in range(9):
+#             if M[di][dj] ==0:
+#                 m[di][dj] = temp_set.pop()
+#     list_row.append(temp_set)
+
+# list_col = []
+# for dj in range(9):
+#     col = [row[dj] for row in M]
+#     temp_set = set()
+#     # 查找缺的数字
+#     for i in legal:
+#         if i not in col:
+#             temp_set.add(i)
+#     # 如果只有一个空位需要填，则弹出，并填入
+#     if len(temp_set) == 1:
+#         for di in range(9):
+#             if M[di][dj] ==0:
+#                 m[di][dj] = temp_set.pop()
+#     list_row.append(temp_set)
+
+# for di in range(9):
+#     choose1 = list_row[di]
+#     for dj in range(9):
+#         choose2 = list_col[dj]
+        
+#         for i in choose1:
+#             if 
+
+    
