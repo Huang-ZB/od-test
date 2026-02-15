@@ -1,35 +1,43 @@
 import sys
 
-'''
-思路：
-用单调，双端队列 维护窗口内的最大值
-移动窗口时，
-1把新增的元素与队尾的元素进行比较，小于则加入队尾，大于则持续弹出队尾直至小于或队列为空
-2查看队头元素的引索是否在窗口内部，不在则移除
-3队列储存引索
-4deque()是双向链表结构（cpython实际上是块列表）
-'''
-n, k = list(map(int,input().split()))
-s = list(map(int,input().split()))
-cur_max = None
-cur_min = None
-max_result = []
-max_que = []
+def main():
+    data = sys.stdin.read().split()
+    n = int(data[0])
+    arr = list(map(int, data[1:1+n]))
 
-for i , num in enumerate(s):
-    # 队列不为空，且队尾小于等于当前元素，则弹出
-    while max_que and s(max_que[-1]) <= num:
-        max_que.pop()
-    max_que.append(num)
+    last_occurrence = {}
+    l = 0
+    max_len = 0
+    results = []  # 存储 [start, end]（1-indexed）
 
-    if i >= k-1: # 窗口已经形成
-        # 检查头部引索是否在窗口内,i - head_index  +1 = k
-        if max_que[0] < i - + 1:
-            max_que.pop(0)
-        # 把头部的最大值记录
-        max_result.append(max_que[0])
+    for r in range(n):
+        num = arr[r]
+        # 如果 num 在当前窗口 [l, r-1] 中出现过
+        if num in last_occurrence and last_occurrence[num] >= l:
+            # 记录当前窗口 [l, r-1] 的长度
+            cur_len = r - l
+            if cur_len > max_len:
+                max_len = cur_len
+                results = [[l + 1, r]]  # 注意：r 是下一个位置，所以子串是 [l, r-1]
+            elif cur_len == max_len:
+                results.append([l + 1, r])
 
-print(' '.join(list(map(str,max_result))))
+            # 移动左指针到重复元素的右边
+            l = last_occurrence[num] + 1
 
+        last_occurrence[num] = r
 
+    # 处理最后一个窗口 [l, n-1]
+    cur_len = n - l
+    if cur_len > max_len:
+        max_len = cur_len
+        results = [[l + 1, n]]
+    elif cur_len == max_len:
+        results.append([l + 1, n])
 
+    print(len(results))
+    for start, end in results:
+        print(start, end)
+
+if __name__ == "__main__":
+    main()
