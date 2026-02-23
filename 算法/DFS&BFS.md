@@ -1,5 +1,12 @@
 # DFS（*Depth First Search*）
 
+## 易错点
+### visited标记时机
+在标准的深度优先搜索中，
+递归开始时（函数开头）打 visited 标记
+迭代入栈时打 visited 标记（若有环结构，入栈在标记会存在重复入栈的情况）
+
+
 思路：
 
 1访问当前节点，并将该节点标记为被访问
@@ -115,7 +122,7 @@ def dfs_iterative(start_node, graph):
     如果要记录路径，可以修改加入栈的元素结构，如:
     记录path：stack = [ (start_node, [star_node])]，同时在后面的加入栈的过程
     中，把邻节点加入到[]中即可
-    
+
     '''
     while stack:
         node = stack.pop() # 弹出栈顶节点
@@ -124,14 +131,14 @@ def dfs_iterative(start_node, graph):
             visited.add(node)   # 标记为已访问
             # --- 在这里处理当前节点的业务逻辑 ---
             # 例如：打印 node.val 或 node
-            print(node) 
+            print(node)
 
             # 将所有未访问的邻居节点压入栈
             # 为了保持与递归版本相同的访问顺序，需要反向添加
             # 因为栈是 LIFO (Last In, First Out)
             for neighbor in reversed(graph.get(node, [])):
                 if neighbor not in visited:
-                    stack.append(neighbor) 
+                    stack.append(neighbor)
 
     return visited # 返回所有访问过的节点集合
 
