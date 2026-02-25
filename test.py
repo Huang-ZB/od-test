@@ -1,101 +1,21 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-HJ121 1or0 - 优化版本
-使用二分查找快速定位区间内的'0'段
-时间复杂度：O(n + q * log(n))
-"""
-
 import sys
-from bisect import bisect_left, bisect_right
 
-def solve():
-    # 读取输入
-    n = int(sys.stdin.readline().strip())
-    s = sys.stdin.readline().strip()
-    q = int(sys.stdin.readline().strip())
 
-    # ============================================================
-    # 预处理：存储所有连续'0'段 [start, end]
-    # ============================================================
-    zero_segments = []  # (start, end)
-    starts = []         # 单独存储start，用于二分查找
+# 等价于求，max(len1,len2)- 最长公共子序列的长度
+s = input()
+t = input()
+if len(s) < len(t):
+    s,t =t,s
+n = len(s)
+m = len(t)
+# dp[i][j] 表示s的前i个和t的前j个公共子序列的长度
+dp = [[0]*(m+1)  for i in range(n+1)]
 
-    i = 0
-    # ============================================================
-    # 记录连续段写法
-    # ============================================================
-    while i < n:
-        if s[i] == '0':
-            start = i # 找0并标记
-            while i < n and s[i] == '0': # 在循环找1，
-                i += 1
-            end = i - 1
-            zero_segments.append((start, end))
-            starts.append(start)
+for i in range(1,n+1):
+    for j in range(1,m+1):
+        if s[i-1] == t[j-1]:
+            dp[i][j] = dp[i-1][j-1] +1
         else:
-            i += 1
+            dp[i][j] = max(dp[i][j-1], dp[i][j-1])
 
-    # ============================================================
-    # 预处理：前缀和，快速计算'0'段子串数
-    # prefix_sum[i] = 前i个'0'段的全'0'子串总数 （从1开始）
-    # ============================================================
-    prefix_sum = [0] * (len(zero_segments) + 1)
-    for i, (start, end) in enumerate(zero_segments):
-        seg_len = end - start + 1
-        prefix_sum[i + 1] = prefix_sum[i] + seg_len * (seg_len + 1) // 2
-
-    # ============================================================
-    # 处理询问
-    # ============================================================
-    results = []
-
-    for _ in range(q):
-        l, r = map(int, sys.stdin.readline().strip().split())
-        l, r = l - 1, r - 1  # 转0-indexed
-
-        # 总子串数
-        length = r - l + 1
-        total = length * (length + 1) // 2
-
-        # --------------------------------------------------------
-        # 计算区间[l,r]内的全'0'子串数
-        # 二分查找找到与[l,r]有交集的'0'段
-        # --------------------------------------------------------
-        zero_count = 0
-
-        # 找到第一个start >= l 的段
-        left_idx = bisect_left(starts, l)
-        # 找到第一个start > r 的段
-        right_idx = bisect_right(starts, r)
-
-        # 处理左端点
-        if left_idx -1 >= 0:
-            eg_start, seg_end = zero_segments[left_idx - 1]
-            if l <= seg_end:
-                inter_start = l
-                inter_end = seg_end
-                inter_len = inter_end - inter_start + 1
-                zero_count += inter_len * (inter_len + 1) // 2
-
-        # 处理右端点
-        if right_idx -1 >= 0:
-            eg_start, seg_end = zero_segments[right_idx - 1]
-            if r <= seg_end:
-                inter_start = r
-                inter_end = seg_end
-                inter_len = inter_end - inter_start + 1
-                zero_count += inter_len * (inter_len + 1) // 2
-
-        if left_idx <= right_idx -1:
-            zero_count += prefix_sum[right_idx] - prefix_sum[left_idxidx]
-
-        results.append(total - zero_count)
-
-    # 输出
-    for res in results:
-        print(res)
-
-
-if __name__ == "__main__":
-    solve()
+print(dp[n+1][m+1])
