@@ -1,101 +1,47 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-HJ121 1or0 - 优化版本
-使用二分查找快速定位区间内的'0'段
-时间复杂度：O(n + q * log(n))
-"""
-
+import enum
 import sys
-from bisect import bisect_left, bisect_right
 
-def solve():
-    # 读取输入
-    n = int(sys.stdin.readline().strip())
-    s = sys.stdin.readline().strip()
-    q = int(sys.stdin.readline().strip())
+def solve(sum_l,sum_front,up_num):
+    if sum_l % 3 != 0:
+        return 0
+    l_store = []
+    l_store2 = []
+    # 找到第一段目标值 且第一段有正数
+    for i, num_sum in enumerate(sum_front):
+        if num_sum == sum_l//3 and up_num[i] > 0:
+            l_store.append(i)
+    # 找到第二段目标值 且第二段有正数
+    for i,num_sum in enumerate(sum_front):
+        if num_sum == 2 * sum_l //3 :
+            l_store2.append(i)
+    cnt = 0
+    if l_store and l_store2:
+        for i in l_store:
+            for j in l_store2:
+                # 保证二、三段都含有正数
+                if up_num[j] - up_num[i] > 0 and up_num[-1] - up_num[j] > 0:
+                    cnt +=1
+        return cnt
+    else:
+        return 0
 
-    # ============================================================
-    # 预处理：存储所有连续'0'段 [start, end]
-    # ============================================================
-    zero_segments = []  # (start, end)
-    starts = []         # 单独存储start，用于二分查找
-
-    i = 0
-    # ============================================================
-    # 记录连续段写法
-    # ============================================================
-    while i < n:
-        if s[i] == '0':
-            start = i # 找0并标记
-            while i < n and s[i] == '0': # 在循环找1，
-                i += 1
-            end = i - 1
-            zero_segments.append((start, end))
-            starts.append(start)
-        else:
-            i += 1
-
-    # ============================================================
-    # 预处理：前缀和，快速计算'0'段子串数
-    # prefix_sum[i] = 前i个'0'段的全'0'子串总数 （从1开始）
-    # ============================================================
-    prefix_sum = [0] * (len(zero_segments) + 1)
-    for i, (start, end) in enumerate(zero_segments):
-        seg_len = end - start + 1
-        prefix_sum[i + 1] = prefix_sum[i] + seg_len * (seg_len + 1) // 2
-
-    # ============================================================
-    # 处理询问
-    # ============================================================
-    results = []
-
-    for _ in range(q):
-        l, r = map(int, sys.stdin.readline().strip().split())
-        l, r = l - 1, r - 1  # 转0-indexed
-
-        # 总子串数
-        length = r - l + 1
-        total = length * (length + 1) // 2
-
-        # --------------------------------------------------------
-        # 计算区间[l,r]内的全'0'子串数
-        # 二分查找找到与[l,r]有交集的'0'段
-        # --------------------------------------------------------
-        zero_count = 0
-
-        # 找到第一个start >= l 的段
-        left_idx = bisect_left(starts, l)
-        # 找到第一个start > r 的段
-        right_idx = bisect_right(starts, r)
-
-        # 处理左端点
-        if left_idx -1 >= 0:
-            eg_start, seg_end = zero_segments[left_idx - 1]
-            if l <= seg_end:
-                inter_start = l
-                inter_end = seg_end
-                inter_len = inter_end - inter_start + 1
-                zero_count += inter_len * (inter_len + 1) // 2
-
-        # 处理右端点
-        if right_idx -1 >= 0:
-            eg_start, seg_end = zero_segments[right_idx - 1]
-            if r <= seg_end:
-                inter_start = r
-                inter_end = seg_end
-                inter_len = inter_end - inter_start + 1
-                zero_count += inter_len * (inter_len + 1) // 2
-
-        if left_idx <= right_idx -1:
-            zero_count += prefix_sum[right_idx] - prefix_sum[left_idxidx]
-
-        results.append(total - zero_count)
-
-    # 输出
-    for res in results:
-        print(res)
+n = int(input())
+l = list(map(int,input().split()))
+# 前缀和
+sum_front = [0] * n
+sum_front[0] = l[0]
+# 记录正数个数总和
+up_num = [0]*n
+if l[0] > 0:
+    up_num[0] = 1
+for i in range(1,n):
+    sum_front[i] = l[i] + sum_front[i-1]
+    if l[i] > 0:
+        up_num[i] = 1 + up_num[i-1]
+    else:
+        up_num[i] = up_num[i-1]
+sum_l = sum_front[-1]
 
 
-if __name__ == "__main__":
-    solve()
+
+print(solve(sum_l,sum_front,up_num))
