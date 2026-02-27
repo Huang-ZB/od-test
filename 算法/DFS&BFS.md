@@ -1,11 +1,12 @@
 # DFS（*Depth First Search*）
 
 ## 易错点
+
 ### visited标记时机
+
 在标准的深度优先搜索中，
 递归开始时（函数开头）打 visited 标记
 迭代入栈时打 visited 标记（若有环结构，入栈在标记会存在重复入栈的情况）
-
 
 思路：
 
@@ -16,8 +17,6 @@
 3深入下个节点，如果没被访问，则递归
 
 def DFS(node, graph, visited):
-
-
 
 ### 模板一：递归版本 (Recursive DFS)
 
@@ -33,10 +32,6 @@ def DFS(node, graph, visited):
 注意点：
 
 visited 用set
-
-
-
-
 
 ```python
 def dfs_recursive(node, graph, visited, path, results):
@@ -155,15 +150,154 @@ def dfs_iterative(start_node, graph):
 # print(visited_nodes)
 ```
 
+# 
+
+## 24点游戏
+
+要点：全排列，分治思想
+
+易错点：
+
+1 递归容易使用成使用op ( a , op（ b  , op( c ) ,  op ( d ) )) ，例如求n项和就适用该方法；但本题拥有括号层级的关系，上述方法会导致遗漏op（op（a，b），op（c，d））
+
+递归版本    
+
+```python
+import sys
+
+def f(arr:list):
+    if len(arr) == 1:
+        if abs(arr[0] - 24.0) < 1e-6:
+            return True
+    
+    n = len(arr)
+    # 随机取arr中两数计算并把计算结果放回arr中并用新数组保存起来
+    # 递归 
+    for i in range(n):
+        for j in range(n):
+            if i != j:
+                a = arr[i]
+                b = arr[j]
+
+                result = []
+                for k in range(n):
+                    if k != i and k != j:
+                        result.append(arr[k])
+                
+                result.append(a+b)
+                if f(result):
+                    return True
+                result.pop()
+
+                result.append(a-b)
+                if f(result):
+                    return True
+                result.pop()
+
+                result.append(a*b)
+                if f(result):
+                    return True
+                result.pop()
+
+                
+                if b >1e-6:
+                    result.append(a/b)
+                    if f(result):
+                        return True
+                    result.pop()
+    return False
+
+l = list(map(int,input().split()))
+
+if f(l):
+    print("true")
+else:
+    print("false")
+```
 
 
 
+迭代版本
 
+```python
+import sys
 
+def solve_24_iterative(arr):
+    # 使用栈来存储待处理的状态，每个状态是一个数字列表
+    stack = [arr]
+    
+    while stack:
+        current_arr = stack.pop()
+        n = len(current_arr)
+        
+        # 终止条件：如果列表中只剩一个数，判断是否接近24
+        if n == 1:
+            if abs(current_arr[0] - 24.0) < 1e-6:
+                return True
+            continue
+        
+        # 遍历所有可能的两数组合 (i, j)
+        # 注意：这里 i 和 j 可以互换，因为减法和除法不满足交换律
+        for i in range(n):
+            for j in range(n):
+                if i == j:
+                    continue
+                
+                a = current_arr[i]
+                b = current_arr[j]
+                
+                # 构建剩余数字的新列表（排除索引 i 和 j）
+                next_arr = []
+                for k in range(n):
+                    if k != i and k != j:
+                        next_arr.append(current_arr[k])
+                
+                # 尝试四种运算，并将新状态压入栈中
+                
+                # 1. 加法
+                next_arr.append(a + b)
+                stack.append(next_arr[:]) # 必须切片复制，否则引用会出错
+                next_arr.pop()
+                
+                # 2. 减法
+                next_arr.append(a - b)
+                stack.append(next_arr[:])
+                next_arr.pop()
+                
+                # 3. 乘法
+                next_arr.append(a * b)
+                stack.append(next_arr[:])
+                next_arr.pop()
+                
+                # 4. 除法 (除数不能为0)
+                if abs(b) > 1e-6:
+                    next_arr.append(a / b)
+                    stack.append(next_arr[:])
+                    next_arr.pop()
+                    
+    return False
 
-
-
-
+# 主程序入口
+if __name__ == "__main__":
+    try:
+        # 读取输入，兼容可能的多空格情况
+        input_data = sys.stdin.read().strip()
+        if not input_data:
+            sys.exit(0)
+            
+        l = list(map(float, input_data.split()))
+        
+        # 确保输入是4个数（虽然原题逻辑对任意长度有效，但24点通常是4个）
+        if len(l) < 1:
+            print("false")
+        else:
+            if solve_24_iterative(l):
+                print("true")
+            else:
+                print("false")
+    except Exception:
+        print("false")
+```
 
 # BFS(**Breath First Search**)
 
