@@ -1,37 +1,49 @@
 
-import math
-n = int(input())
+high = [int(i) for i in input().split()]
 
-high = []
-low = {}
+n = len(high)
+hi = n-1
+lo = 0
 
-for _ in range(n):
-    id,num,pri,pr = map(int,input().split())
-
-    if pr == 0:
-        if pri > 100:
-            high.append([id,num,pri])
-            continue
+S_max = 0
+index = [lo,hi]
+while lo < hi -1:
+    min_bian = min(high[lo],high[hi])
+    S = min_bian*(hi-lo-1)
+    # 剪枝
+    if S < S_max:
+        if high[lo] > high[hi]:
+            hi -= 1
         else:
-            if id in low:
-                low[id]["num"] += num
-            else:
-                low[id] = {
-                    "num" : num,
-                    "pri" : pri
-                    }   
+            lo += 1
+        continue
 
+        
+    for i in range(lo+1,hi):
+        if high[i] >= min_bian:
+            S -= min_bian
+        else:
+            S -= high[i]
+    if S >= S_max:
+        S_max = S
+        index = [lo,hi]
     
-for key,val in low.items():
-    num,pri = val["num"],val["pri"]
-    if pri < 100 and num >= 100:
-        ans.append([key,num,math.ceil(pri*0.9)])
-
-for i in sorted(ans,key = lambda x : (x[0],-x[1])):
-    print(" ".join(map(str,i)))
+    if high[lo] > high[hi]:
+        hi -= 1
+    else:
+        lo += 1
 
 
-     
+if S_max == 0:
+    print(0)
+else:
+    print(" ".join(map(str,index)),end=":")
+    print(S_max)
+
+
+
+        
+
 
 
 

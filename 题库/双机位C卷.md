@@ -37,6 +37,50 @@
 
 蓄水量最大时的边界下标为1 和 6
 
+```python
+high = [int(i) for i in input().split()]
+
+n = len(high)
+hi = n-1
+lo = 0
+
+S_max = 0
+index = [lo,hi]
+while lo < hi -1:
+    min_bian = min(high[lo],high[hi])
+    S = min_bian*(hi-lo-1)
+    # 剪枝
+    if S < S_max:
+        if high[lo] > high[hi]:
+            hi -= 1
+        else:
+            lo += 1
+        continue
+
+        
+    for i in range(lo+1,hi):
+        if high[i] >= min_bian:
+            S -= min_bian
+        else:
+            S -= high[i]
+    if S >= S_max:
+        S_max = S
+        index = [lo,hi]
+    
+    if high[lo] > high[hi]:
+        hi -= 1
+    else:
+        lo += 1
+
+
+if S_max == 0:
+    print(0)
+else:
+    print(" ".join(map(str,index)),end=":")
+    print(S_max)
+```
+
+
 ## 采购订单
 在一个采购系统中，采购申请(PR)需要经过审批后才能生成采购订单(PO)。每个PR包含商品的单价(假设相同商品的单价一定是一样的)及数量信息。系统要求对商品进行分类处理:单价高于100元的商品需要单独处理，单价低于或等于100元的相同商品可以合并到同一采购订单PO中。针对单价低于100的小额订单，如果量大可以打折购买。
 具体规则如下:
