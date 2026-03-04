@@ -1,39 +1,41 @@
-import sys
-
-with open("test.txt", "r", encoding="utf-8") as f:
-    sys.stdin = f
-    n, t, k = [int(i) for i in input().split()]
-    krl = [int(i) for i in input().split()]
-
-# 求k个和为t的组合
+minAverageLost = int(input())
+a = list(map(int,input().split()))
 
 
-# 对于每个数有选和不选的策略
-def solution(n, t, k, krl, index, pre_sum, pre_quantity, result, ans):
-    # 对于当前的数
-    if index > n - 1:
-        return
-    # 不选择
-    solution(n, t, k, krl, index + 1, pre_sum, pre_quantity, result, ans)
-
-    # 选择
-    cur_sum = pre_sum + krl[index]
-    cur_quantity = pre_quantity + 1
-    if cur_sum > t:
-        return
-    if cur_quantity > k:
-        return
-    if cur_quantity == k and cur_sum == t:
-        ans.append(result + [index])
-        return
-    else:
-        solution(n, t, k, krl, index + 1, cur_sum, cur_quantity, result + [index], ans)
-    return
-
-
+lo = 0
+hi = 1
+sum1 = a[0] + a[1]
+cur_len = hi-lo+1
+n = len(a)
+max_len = 0
 ans = []
-result = []
-pre_sum = 0
-pre_quantity = 0
-solution(n, t, k, krl, 0, 0, 0, result, ans)
-print(len(ans))
+while hi < n and lo< hi:
+    ave = sum1 / (cur_len)
+    # 如果在最小值以内
+    if ave <= minAverageLost:
+        # 判断最大长度，更大则更换；等于，则添加坐标
+        if cur_len > max_len:
+            max_len = cur_len
+            ans = [[lo,hi]]
+        elif cur_len == max_len:
+            ans.append([lo,hi])
+        hi += 1
+        if hi < n-1:
+            cur_len += 1
+            sum1 += a[hi]
+    else:
+        # 如果超过最小值，则缩小范围
+        sum1 -= a[lo]
+        lo += 1
+        cur_len -= 1
+        # 如果指针重合
+        if lo == hi and hi < n-1:
+            hi += 1
+            sum1 += a[hi]
+            cur_len += 1
+
+
+str_a = ['-'.join(map(str,i)) for i in ans]
+print(' '.join(str_a))
+
+

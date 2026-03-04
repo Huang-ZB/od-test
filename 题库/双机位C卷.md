@@ -281,10 +281,10 @@ t>0，0<k<=n
 ```python
 import sys
 
-with open("test.txt", "r", encoding="utf-8") as f:
-    sys.stdin = f
-    n, t, k = [int(i) for i in input().split()]
-    krl = [int(i) for i in input().split()]
+# with open("test.txt", "r", encoding="utf-8") as f:
+#     sys.stdin = f
+n, t, k = [int(i) for i in input().split()]
+krl = [int(i) for i in input().split()]
 
 # 求k个和为t的组合
 
@@ -320,4 +320,150 @@ solution(n, t, k, krl, 0, 0, 0, result, ans)
 print(len(ans))
 
 ```
+## P00206. 华为od机试—螺旋数组矩阵/数字螺旋矩阵
+疫情期间，小明隔离在家，百无聊赖，在纸上写数字玩。他发明了一种写法:
+给出数字个数n和行数m(1 < n,m < 999)，从左上角的1开始，按照顺时针螺旋向内写方式，依次写出2,3...n,最终形成个一m行矩阵。
+小明对这个矩阵有些要求
+1.每行数字的个数一样多
+2.列的数量尽可能少
+3.填充数字时优先填充外部
+4.数字不够时，使用单个*号占位
+输入描述
+输入一行，两个整数，空格隔开，依次表示n、m
+输出描述
+符合要求的唯一矩阵
 
+
+示例1：
+输入
+
+9 4
+输出
+1 2 3
+
+* * 4
+
+9 * 5
+
+8 7 6
+
+示例2：
+输入
+3 5
+输出
+1
+
+2
+
+3
+
+*
+
+*
+
+
+### 思路
+优化：利用方向引索取模来实现更好的转向
+方向数组按顺时针排列，实现顺时针90度转弯
+dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+d_idx = 0  # 当前方向索引
+d_idx = (d_idx + 1) % 4 # 顺时针旋转90度
+
+
+```python
+import sys
+import sys
+
+# 读取输入
+try:
+    line = sys.stdin.read().split()
+    if not line:
+        exit()
+    n = int(line[0])
+    m = int(line[1])
+except ValueError:
+    exit()
+
+# 1. 计算列数 col
+# 题目要求：每行数字个数一样多，列的数量尽可能少
+# 即 col = ceil(n / m)
+if n % m == 0:
+    col = n // m
+else:
+    col = n // m + 1
+
+# 2. 初始化矩阵，全部填 '*'
+matrix = [["*"] * col for _ in range(m)]
+
+# 3. 定义方向和初始状态
+# 方向顺序：右(0,1) -> 下(1,0) -> 左(0,-1) -> 上(-1,0)
+dirs = [(0, 1), (1, 0), (0, -1), (-1, 0)]
+d_idx = 0  # 当前方向索引
+
+x, y = 0, 0  # 当前位置
+matrix[x][y] = 1  # 填入第一个数
+
+# 4. 开始螺旋填充 2 到 n
+for num in range(2, n + 1):
+    # 计算下一个理论位置
+    dx, dy = dirs[d_idx]
+    nx, ny = x + dx, y + dy
+    
+    # 判断是否需要转向：
+    # 条件1: 越界 (nx < 0 or nx >= m or ny < 0 or ny >= col)
+    # 条件2: 该位置已经被填充 (matrix[nx][ny] != '*')
+    if nx < 0 or nx >= m or ny < 0 or ny >= col or matrix[nx][ny] != "*":
+        # 改变方向 (顺时针转90度)
+        d_idx = (d_idx + 1) % 4
+        dx, dy = dirs[d_idx]
+        nx, ny = x + dx, y + dy
+    
+    # 更新位置并填入数字
+    x, y = nx, ny
+    matrix[x][y] = num
+
+# 5. 输出结果
+for row in matrix:
+    print(" ".join(map(str, row)))
+
+```
+
+## P00152. 华为od机试—查找接口成功率最优时间段
+
+服务之间交换的接口成功率作为服务调用关键质量特性，某个时间段内的接口失败率使用一个数组表示，
+
+数组中每个元素都是单位时间内失败率数值，数组中的数值为0~100的整数，
+
+给定一个数值(minAverageLost)表示某个时间段内平均失败率容忍值，即平均失败率小于等于minAverageLost，
+
+找出数组中最长时间段，如果未找到则直接返回NULL。
+
+输入描述
+
+输入有两行内容，第一行为{minAverageLost}，第二行为{数组}，数组元素通过空格(” “)分隔，
+
+minAverageLost及数组中元素取值范围为0~100的整数，数组元素的个数不会超过100个。
+
+输出描述
+
+找出平均值小于等于minAverageLost的最长时间段，输出数组下标对，格式{beginIndex}-{endIndx}(下标从0开始)，
+
+如果同时存在多个最长时间段，则输出多个下标对且下标对之间使用空格(” “)拼接，多个下标对按下标从小到大排序。
+
+示例1 输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+1
+
+0 1 2 3 4
+
+输出
+
+0-2
+
+说明
+
+输入解释：minAverageLost=1，数组[0, 1, 2, 3, 4]
+
+前3个元素的平均值为1，因此数组第一个至第三个数组下标，即0-2
