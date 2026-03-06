@@ -587,3 +587,110 @@ N和单词red、blue、draw、error之间是英文逗号连接。
 1,error
 说明
 第1步的列序号为0，超出有效列编号的范围，故输出 1,error。
+
+### 思路和易错点
+1 注意检查时要正负方向都要检查
+2 找到落子点后记得break
+
+```python
+
+width,height = list(map(int, input().split()))
+arr = list(map(int, input().split()))
+
+def check(matrix,row,col,width,height):
+    # 检查四个方向，横，纵，对角，斜对角
+    # 注意是以自己为中心在该方向上左右检查
+    forward = {(0,1),(1,0),(1,1),(1,-1)}
+    for way in forward:
+        dx,dy = way
+        # 只需要找三个
+        cnt = 0
+        # 正方向
+        new_row = row + dx
+        new_col = col + dy
+        while 0 <= new_col < width and 0<= new_row < height:
+            if matrix[new_row][new_col] == matrix[row][col]:
+                cnt +=1
+            else:
+                break
+            if cnt == 3 :
+                return True
+            new_row += dx
+            new_col += dy
+        # 负方向
+        new_row = row-dx
+        new_col = col-dy
+        while 0 <= new_row < width and 0<= new_col < height:
+            if matrix[new_row][new_col] == matrix[row][col]:
+                cnt +=1
+            else:
+                break
+            if cnt == 3 :
+                return True
+            new_row -= dx
+            new_col -= dy
+    return False
+
+def solution(arr,width,height):
+    color = {1:"red",2:"blue"}
+    len_arr = len(arr)
+    matrix =  [ [0]*width for i in range(height) ]
+    for i in range(len_arr):
+        # 从第0步开始，初始为红色1，即偶数为1
+        turn = 1 if i % 2 == 0 else 2
+        bushu = i+1
+        # 落子
+        # 列从0开始，要减1
+        col = arr[i] - 1
+        # 检查列是否合法
+        if col < 0 or col >= width:
+            return f"{bushu},error"
+
+        # # 查找落子位置
+        # row_idx = -1
+        # for j in range(height-1,-1,-1):
+        #     if matrix[j][col] == 0:
+        #         row_idx = j
+        #         break
+        # # 如果未找到，说明列满了
+        # if row_idx == -1:
+        #     return f"{bushu},error"
+        # else:
+        #     matrix[row_idx][col] = turn
+
+        # if check(matrix,row_idx,col,width,height):
+        #     return f"{bushu},{color[turn]}"
+
+        # 检查列是否落满
+        if matrix[0][col] != 0:
+            return f"{bushu},error"
+        # 棋盘落子会落到最下面，所以从最后一行开始
+        for row in range(height-1,-1,-1):
+            if matrix[row][col] ==0:
+                matrix[row][col] = turn
+                res = check(matrix,row,col,width,height)
+                if res:
+                    return f"{bushu},{color[turn]}"
+                # 不要忘记break
+                break
+    # 下完所有步数都没有返回值说明和局
+    return "0,draw"
+            
+print(solution(arr,width,height))
+```
+
+## P00408. 华为od机试—网格红绿灯最短路径【2025新题】
+给定一个二维的m*n网格地图(grids二维数组)，每个单元格0为空，1是障碍物，2是红绿灯;每一步可以在0或者2的单元格移动，每一秒可以走一个单元格;遇到红绿灯想要通过需要等待不同的时间才能通过，大小为x的light数组标注灯的坐标和等待时间，例如(2,2.3),坐标(2,2)红绿灯等待时间3秒，问从左上角(0,0)到右下角(m-1,n-1)所需的最短时间。
+
+输入描述
+第一行输入 grids 二维数组，内部数据只有0，1，2，1<m,n<=100
+第二行输入 lights 红绿灯二维数组，1<x<=m*n
+输出描述
+从坐标(0,0)到(m-1,n-1)坐标所需的最短时间，如果没有路径，则返回最短时间为-1.
+
+示例1
+输入
+[[0,1,0],[0,2,1],[0,0,0]]
+[[1,1,3]]
+输出
+4

@@ -1,96 +1,27 @@
-# n为宽，m为高
-n, m = list(map(int, input().split()))
-arr = list(map(int, input().split()))
+import ast
 
+matrix = ast.literal_eval(input())
+lights = ast.literal_eval(input())
+lights_dict = {}
+row_n = len(matrix)
+col_m = len(matrix[0])
 
-def check(matrix, x, y, n, m):
-    ways = [(1, 0), (0, 1), (-1, 0), (0, -1), (1, 1), (1, -1), (-1, -1), (-1, 1)]
-    for way in ways:
-        dx, dy = way
-        cnt = 1
-        cur = matrix[x][y]
-        new_x = x + dx
-        new_y = y + dy
-        while 0 <= x < n and 0 <= y < m:
-            # 如果与原来的相同
-            if matrix[new_x][new_y] == cur:
-                cnt += 1
-                if cnt == 4:
-                    return True
-                new_x += dx
-                new_y += dy
-            else:
-                # 如果出现不同 更换提前退出循环
-                break
-    return False
+for i in lights:
+    row,col,time = i
+    lights_dict[(row,col)] = time
 
+visited = [[False]*col_m for _ in range(row_n)]
+def dfs(grid,light,start,target,pretime):
+    if start == target:
+        return
 
-def solution(arr, n, m):
-    matrix = [[0] * m for col in range(n)]
-    color = ["NULL", "red", "blue"]
-    for i in range(len(arr)):
-        # 红色为1，蓝色为2
-        flag = 1 if i % 2 == 0 else 2
-        # 步数
-        bushu = i + 1
-        # 列数
-        col = arr[i] - 1
-        if 0 <= col < n:
-            col_m = matrix[col]
-            col_len = len(col_m)
-            row = 0
-            # 找落子点
-            while col_m[row] != 0 and row < col_len:
-                row += 1
-            if row < col_len:
-                # 没越界说明在范围里面
-                col_m[row] = flag
-                if check(matrix, col, row, n, m):
-                    return f"{bushu},{color[matrix[col][row]]}"
-            else:
-                return f"{bushu},error"
-        else:
-            # 列数不再范围里面
-            return f"{bushu},error"
+    # deal with curnode
+    visited[start[0]][start[1]] = True
+    if start in lights_dict:
+        curtime = pretime + lights_dict[start]
+    curtime += 1
 
+    # neibor
+    way = {(1,0),(-1,0),(1,0),(1,0)}
 
-print(solution(arr, n, m))
-minAverageLost = int(input())
-a = list(map(int, input().split()))
-
-
-lo = 0
-hi = 1
-sum1 = a[0] + a[1]
-cur_len = hi - lo + 1
-n = len(a)
-max_len = 0
-ans = []
-while hi < n and lo < hi:
-    ave = sum1 / (cur_len)
-    # 如果在最小值以内
-    if ave <= minAverageLost:
-        # 判断最大长度，更大则更换；等于，则添加坐标
-        if cur_len > max_len:
-            max_len = cur_len
-            ans = [[lo, hi]]
-        elif cur_len == max_len:
-            ans.append([lo, hi])
-        hi += 1
-        if hi < n - 1:
-            cur_len += 1
-            sum1 += a[hi]
-    else:
-        # 如果超过最小值，则缩小范围
-        sum1 -= a[lo]
-        lo += 1
-        cur_len -= 1
-        # 如果指针重合
-        if lo == hi and hi < n - 1:
-            hi += 1
-            sum1 += a[hi]
-            cur_len += 1
-
-
-str_a = ["-".join(map(str, i)) for i in ans]
-print(" ".join(str_a))
+    
