@@ -1,27 +1,31 @@
-import ast
 
-matrix = ast.literal_eval(input())
-lights = ast.literal_eval(input())
-lights_dict = {}
-row_n = len(matrix)
-col_m = len(matrix[0])
+# 有一个数组，每次从里面取一个以上的数，要求每次取出的组合相等，组合可以只有一个数
+# 求最多的组合数
 
-for i in lights:
-    row,col,time = i
-    lights_dict[(row,col)] = time
+arr = list(map(int,input().split()))
 
-visited = [[False]*col_m for _ in range(row_n)]
-def dfs(grid,light,start,target,pretime):
-    if start == target:
-        return
+def select_func(arr,start,cur_selction,res):
+    cur_sum , path = cur_selction
 
-    # deal with curnode
-    visited[start[0]][start[1]] = True
-    if start in lights_dict:
-        curtime = pretime + lights_dict[start]
-    curtime += 1
+    # 终止条件
+    if start == len(arr):
+        res.append(cur_selction)
+        return 
 
-    # neibor
-    way = {(1,0),(-1,0),(1,0),(1,0)}
+
+    # 不选择该元素
+    select_func(arr,start+1,cur_selction)
+
+    # 选择该元素
+    new_selection = [cur_sum + arr[start],path + [start]]
+    select_func(arr,start+1,new_selection)
+    return
+    
+
+def solution(arr):
+
+    res = []
+    select_func(arr,0,[],res)
+
 
     

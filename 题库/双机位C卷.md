@@ -694,3 +694,276 @@ print(solution(arr,width,height))
 [[1,1,3]]
 输出
 4
+
+
+```python
+import ast
+import heapq
+grids = ast.literal_eval(input())
+lights = ast.literal_eval(input())
+# grids = ast.literal_eval('[[0,1,0],[0,2,1],[0,0,0]]')
+# lights = ast.literal_eval('[[1,1,3]]')
+
+lights_dict = {}
+for light in lights:
+    row,col,time = light
+    lights_dict[(row,col)] = time
+
+
+
+
+def dijkstra(grids,lights_dict,min_grids,start,target,pretime,rown,coln):
+    ways = {(0,1),(0,-1),(1,0),(-1,0)}
+    # 处理源点
+    x,y = start
+    pq = [(pretime,x,y)]
+    
+    while pq:
+        # 弹出 源点到目标点耗时最短
+        cur_time,cur_x,cur_y = heapq.heappop(pq)
+        # 与记录的最短时间表进行比较，若时间更长说明不是最短，直接剔除
+        if cur_time > min_grids[cur_x][cur_y]:
+            continue
+        
+        # 查找邻接点
+        for way in ways:
+            dx,dy = way
+            newx = cur_x + dx
+            newy = cur_y + dy
+            # 检查是否越界
+            if  newx < 0 or newx >= rown or newy < 0 or newy >= coln:
+                continue
+            # 查看是否能通过
+            if grids[newx][newy] == 1:
+                continue
+            
+            # 经过时间
+            througth_time = 1
+            # 等待时间
+            wait_time = 0
+            if grids[newx][newy] == 2:
+                wait_time = lights_dict[(newx,newy)]
+            # 源点到该点的时间
+            tatol_time = cur_time + througth_time + wait_time
+
+            if tatol_time < min_grids[newx][newy]:
+                min_grids[newx][newy] = tatol_time
+                heapq.heappush(pq,(tatol_time,newx,newy))
+    return
+
+
+def solution(grids,lights_dict):
+    # 检查地图是否为空
+    if not grids:
+        return -1
+    # 检查起始点，终点是否为障碍物
+    rown = len(grids)
+    coln = len(grids[0])
+    start = (0,0)
+    target = (rown-1,coln-1)
+    if grids[0][0] == 1 or grids[rown-1][coln-1] == 1:
+        return -1
+    min_grids = [[float("inf")]*coln for _ in range(rown)]
+    # 起始点的等待时间
+    pretime = 0
+    if grids[0][0] == 2:
+        pretime += lights_dict.get(start,0)
+    min_grids[0][0] = pretime
+
+    dijkstra(grids,lights_dict,min_grids,start,target,pretime,rown,coln)
+    
+    if min_grids[rown-1][coln-1] == float('inf'):
+        return -1
+    else:
+        return min_grids[rown-1][coln-1]
+    
+
+print(solution(grids,lights_dict))
+
+```
+## P00115. 华为od机试—打印机队列 / 打印文件
+
+有5台打印机打印文件，每台打印机有自己的待打印队列。因为打印的文件内容有轻重缓急之分，
+
+所以队列中的文件有1~10不同的代先级，其中数字越大优先级越高。
+
+打印机会从自己的待打印队列中选择优先级最高的文件来打印。
+
+如果存在两个优先级一样的文件，则选择最早进入队列的那个文件。
+
+现在请你来模拟这5台打印机的打印过程。
+
+输入描述
+
+每个输入包含1个测试用例，每个测试用例第一行给出发生事件的数量N（0 < N < 1000）。
+接下来有 N 行，分别表示发生的事件。
+共有如下两种事件：
+1. “IN P NUM”，表示有一个拥有优先级 NUM 的文件放到了打印机 P 的待打印队列中。（0< P <= 5, 0 < NUM <= 10)；
+2. “OUT P”，表示打印机 P 进行了一次文件打印，同时该文件从待打印队列中取出。（0 < P <= 5）。
+
+输出描述
+
+对于每个测试用例，每次”OUT P”事件，请在一行中输出文件的编号。
+如果此时没有文件可以打印，请输出”NULL“。
+文件的编号定义为”IN P NUM”事件发生第 x 次，此处待打印文件的编号为x。编号从1开始。
+
+示例1   输入输出示例仅供调试，后台判断数据一般不包含示例
+
+输入
+
+7
+IN 1 1
+IN 1 2
+IN 1 3
+IN 2 1
+OUT 1
+OUT 2
+OUT 2
+
+输出
+
+3
+4
+NULL
+
+### 优化
+使用堆排序
+```python
+from bisect import bisect_left
+
+N = int(input())
+file_num = 1
+dict_p = {}
+for i in range(N):
+    arr = list(input().split(" "))
+    # 如果时输入事件
+    if arr[0] == "IN":
+        P,NUM = int(arr[1]) , int(arr[2])
+        # 升序排序，相同优先级文件号大的会排在后面，所以取负
+        item = (NUM,-file_num)
+        if P in dict_p:
+            q = dict_p[P]
+            idx = bisect_left(q,item)
+            q.insert(idx,item)
+            
+        else:
+            dict_p[P] = [item]
+        file_num += 1
+
+    
+    if arr[0] == "OUT":
+        P = int(arr[1])
+        if P in dict_p and len(dict_p[P]) > 0:
+            print(-dict_p[P].pop()[1])
+        else:
+            print("NULL")
+```
+
+## P00410. 华为od机试—优雅子数组
+如果一个数组中出现次数最多的元素出现大于等于K次，被称为K -优雅数组，k也可以被称为优雅阈值。例如，数组1，2，3，1、2，3，1，它是一个3-优雅数组，因为元素1出现次数大于等于3次，数组1,2,3,1,2就不是一个3-优雅数组，因为其中出现次数最多的元素是1和2，只出现了2次。
+给定一个数组A和k，请求出A有多少子数组是k-优雅子数组。
+子数组是数组中一个或多个连续元素组成的数组。
+例如，数组[1.2.3.4]包含10个子数组，分别是:
+[1], [1,2], [1,2,3], [1,2,3,], [2], [2,3], [2,3,4], [3], [3,4] , [4]
+输入描述
+第一行输入两个数字，以空格隔开，含义是: A数组长度 k值
+第二行输入A数组元素，以空格隔开
+输出描述
+输出A有多少子数组是k-优雅子数组
+
+示例1：
+
+输入：
+
+7 3
+1 2 3 1 2 3 1
+
+输出：
+
+1
+### 优化
+下面的方法比较暴力
+利用双指针和可变的滑动窗口
+当窗口内的某个元素出现次数==k是，直接剪枝，含有[left,right]的数组都成立，即n-right +1个
+此时开始左指针，并减去相应的次数直至找到与arr[right]相同的元素，使其=k-1
+之后在移动右指针，重复上述操作
+
+```python 
+
+n, k = list(map(int,input().split()))
+arr = list(map(int,input().split()))
+def solution(arr,n,k):
+    ans = 0
+    if n < k:
+        return 0
+    # 遍历某位置为起始的所有数组
+    for i in range(n-k+1):
+        
+        dict_sub = {}
+        for j in  range(i,n):
+            # dictsub记录i——j区间的子数组的出现次数，若出现某元素=k，其后面的更长的子数组也符合条件
+            if arr[j] not in dict_sub:
+                dict_sub[arr[j]] = 0
+            dict_sub[arr[j]] += 1
+            if dict_sub[arr[j]] == k:
+                ans += n - j
+                break
+    return ans
+        
+
+print(solution(arr,n,k))
+
+```
+
+## P00402. 华为od机试—叠积木
+有一堆长方体积木，它们的长度和宽度都相同，但长度不一。
+
+小橙想把这堆积木叠成一面墙，墙的每层可以放一个积木，也可以将两个积木拼接起来，要求每层的长度相同。
+
+若必须用完这些积木，叠成的墙最多为多少层？
+
+如下是叠成的一面墙的图示，积木仅按宽和高所在的面进行拼接。
+
+
+
+输入描述：
+
+输入为一行，为各个积木的长度，数字为正整数，并由空格分隔。积木的数量和长度都不超过5000。
+
+输出描述：
+
+输出一个数字，为墙的最大层数，如果无法按要求叠成每层长度一致的墙，则输出-1。
+
+输入
+
+给定积木的长度，以空格分隔，例如:3 6 6 3。
+
+输出
+
+如果可以搭建，返回最大层数，如果不可以返回-1。
+
+示例1   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+3 6 6 3
+
+输出
+
+3
+
+解释：以 6 为底的墙，第一层为 6 ，第二层为 6，第三层 3 + 3。
+
+示例2   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+1 4 2 3 6
+
+输出
+
+-1
+
+解释：
+
+无法组成长度相同的结果
