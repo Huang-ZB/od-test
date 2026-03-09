@@ -967,3 +967,274 @@ print(solution(arr,n,k))
 解释：
 
 无法组成长度相同的结果
+
+### 易错点
+注意记得先判断n = 1 ，n = 2的情况。
+max_len = arr[-1] + arr[-2] 只有在n>=2的情况才能进行赋值
+**有些赋值不能想当然，应该考虑该元素是否存在**
+
+```python
+
+# 有一个数组，每次从里面取一个或两个的数，要求每次取出的组合相等，组合可以只有一个数
+# 求最多的组合数
+
+arr = list(map(int,input().split()))
+
+arr = [val for val in arr if val]
+# 本题限制在一层最多两个，复杂度降低很多
+'''
+思路
+枚举一层所有可能的长度，最短为：单根最长；最长为：最长+第二长
+排序，arr[left] + arr [right] == lenght
+假设arr[left] + arr [right] > lenght   由于单调性，则无法找到与arr [right]匹配的组合
+同理 arr[left]
+特例：第一遍遍历的时候，arr[0] == lenght
+注意：可能存在遍历后left和right指向同一根的情况，奇数的情况
+有两种情况：一种每层都是两个积木合在一起；一种若干层是一个积木，即单根最长;其他是两积木
+'''
+# 升序
+
+def solution(arr):
+    n = len(arr)
+    if n == 1:
+        return 1
+    if n == 2 :
+        if arr[0] == arr[1]:
+            return 2
+        else:
+            return 1
+
+    arr.sort()
+    min_len = arr[-1]
+    max_len = arr[-1] + arr[-2]
+    
+    
+    for i in range(min_len,max_len + 1):
+        ans = 0
+        left = 0
+        right = n-1
+        while right >= 0 and arr[right] == i:
+            right -= 1
+            ans += 1
+    
+        while left < right: 
+            if arr[left] + arr[right] == i:
+                ans += 1
+                left += 1
+                right -= 1
+            else:
+                break
+        if left > right:
+            return ans
+    return -1
+print(solution(arr))
+
+
+```
+
+## P00169. 华为od机试—两个字符串间的最短路径
+给定两个字符串，分别为字符串A与字符串B。例如A字符串为ABCABBA，B字符串为CBABAC。可以得到m*n的二维数组，定义原点为(0,0)，终点为(m,n)，水平与垂直的每一条边距离为1,
+从原点(0,0)到(0,A)为水平边，距离为1，从(0,A)到(A,C)为垂直边，距离为1; 假设两个字符串同一位置的两个字符相同则可以作一个斜边、如(A.C)到.B)最短距离为斜边，距离同样为1。作出所有的斜边，则有(0.0)到(B.B)的距离为 1个水平边+1个垂直边+1个斜边 =3。
+根据定义可知，原点到终点的最短距离路径如下图红线标记，最短距离为9;
+
+路径为(0,0)->(A,0)->(A,C)->(B,B)->(C,B)->(A,A)->(B,B)->(B,B)->(A,A)->(A,C)
+
+
+
+
+输入描述
+空格分割的两个字符串A与字符串B，字符串不为”空串”。
+
+字符格式满足正则规则:[A-Z] 字符串长度<= 10000
+输出描述
+原点到终点的最短距离
+
+示例1：
+
+输入：
+
+ABC ABC
+
+输出：
+3
+
+示例2：
+
+输入：
+
+ABCABBA CBABAC
+
+输出：
+9
+
+```python
+import heapq
+s1 , s2 = input().split()
+
+
+def dijstra(min_path,rown,coln,s1,s2):
+
+    ways = [(0,1),(0,-1),(1,0),(-1,0),]
+    pq = [(0,0,0)]
+    while pq :
+        distance,x,y = heapq.heappop(pq)
+        if x == rown -1 and y == coln -1:
+            return distance
+
+        # 比较当前点距离与记录的最小路径，
+        if min_path[x][y] < distance:
+            continue
+        else:
+            min_path[x][y] = distance
+        
+        # 找邻居
+        # 水平和垂直方向
+        for way in ways:
+            dx ,dy = way
+            newx = x + dx
+            newy = y + dy
+            if 0<= newx < rown and 0 <= newy < coln:
+                new_distance = distance + 1
+                if new_distance < min_path[newx][newy]:
+                    min_path[newx][newy] = new_distance
+                heapq.heappush(pq,(new_distance,newx,newy))
+        # 处理斜角
+        
+        newx = x +1
+        newy = y +1
+        if 0<= x + 1 < rown and 0 <= y + 1< coln:
+            if s1[newy-1] == s2[newx-1]:
+                new_distance = distance + 1
+                if new_distance < min_path[newx][newy]:
+                    min_path[newx][newy] = new_distance
+                heapq.heappush(pq,(new_distance,newx,newy))
+    
+    return min_path[rown -1 ][coln -1 ]
+    
+
+def solution(s1,s2):
+    coln = len(s1) + 1
+    rown = len(s2) + 1
+
+    min_path = [ [float('inf')]*coln for _ in range(rown)]
+
+    return dijstra(min_path,rown,coln,s1,s2)
+
+print(solution(s1,s2))
+```
+
+## P00155. 华为od机试—宜居星球改造计划
+2XXX年，人类通过对火星的大气进行宜居改造分析，使得火星已在理论上具备人类宜居的条件，由于技术原因，无法一次性将火星大气全部改造，只能通过局部处理形式，假设将火星待改造的区域为row * column的网格每个网格有3个值，宜居区、可改造区、死亡区，使用YES、NO、NA代替，YES表示该网格已经完成大气改造，NO表示该网格未进行改造，后期可进行改造，NA表示死亡区，不作为判断是否改造完成的宜居，无法穿过
+初始化下，该区域可能存在多个宜居区，并且每个宜居区能同时在每个太阳日单位向上下左右四个方向的相邻格子进行扩散，自动将4个方向相邻的真空区改造成宜居区;请计算这个待改造区域的网格中，可改造区是否能全部变成宜居区，如果可以，则返回改造的太阳日天数，不可以则返回-1。
+
+输入描述:
+输入row*column个网格数据，每个网格值枚举值如下: YES，NO，NA，样例:
+YES YES NO
+NO NO NO
+NA NO YES
+输出描述:
+可改造区是否能全部变成宜居区，如果可以，则返回改造的太阳日天数，不可以则返回-1.
+补充说明:
+grid[i]只有3种情况，YES、NO、NA
+row == grid.length, column == grid[i].length, 1 <= row, column <= 8
+
+示例1
+输入:
+YES YES NO
+NO NO NO
+YES NO NO
+输出:
+
+2
+说明:
+经过2个太阳日，完成宜居改造.
+
+示例2
+输入:
+YES NO NO NO
+
+NO NO NO NO
+NO NO NO NO
+NO NO NO NO
+输出:
+
+6
+说明:
+经过6个太阳日，可完成改造
+
+
+示例3
+输入:
+
+NO NA
+输出:
+
+-1
+
+说明:
+无改造初始条件，无法进行改造
+
+
+示例4
+输入:
+YES NO NO YES
+
+NO NO YES NO
+
+NO YES NA NA
+
+YES NO NA NO
+输出:
+
+-1
+说明:
+
+右下角的区域，被周边三个死亡区挡住，无法实现改造
+### 易错点
+1. 特殊情况：没有YES；没有NO的情况
+2. 多源扩散可以把层级跟随记录到栈里面，与记录路径一样
+
+```python
+import sys
+import collections
+matirx = []
+for line in sys.stdin.readlines():
+    matirx.append(line.strip().split())
+
+
+def solution(matirx):
+    row = len(matirx)
+    col = len(matirx[0])
+    direction = [(1,0),(0,1),(-1,0),(0,-1)]
+    Yes_zone = collections.deque()
+    NO_count = 0
+    for i in range(row):
+        for j in range(col):
+            if matirx[i][j] == 'YES':
+                Yes_zone.append((i,j,0))
+            elif matirx[i][j] == 'NO':
+                NO_count += 1
+    # 处理特殊情况
+    if not Yes_zone:
+        return -1
+    if NO_count == 0:
+        return 0
+    day = 0
+    while Yes_zone:
+        x,y,day = Yes_zone.popleft()
+        for dx,dy in direction:
+            nx ,ny = x+dx,y+dy
+            if 0<= nx < row and  0<= ny < col:
+                if matirx[nx][ny] == "NO" :
+                    matirx[nx][ny] = "YES"
+                    NO_count -= 1
+                    Yes_zone.append((nx,ny,day + 1))
+
+    # 循环完后，若还有NO存在，说明是在死角
+    if NO_count:
+        return -1
+    else:
+        return day
+
+print(solution(matirx))
+```
