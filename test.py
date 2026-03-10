@@ -1,44 +1,44 @@
-import sys
-import collections
-matirx = []
-for line in sys.stdin.readlines():
-    matirx.append(line.strip().split())
+import heapq
+m,n = list(map(int,input().split(',')))
 
 
-def solution(matirx):
-    row = len(matirx)
-    col = len(matirx[0])
-    direction = [(1,0),(0,1),(-1,0),(0,-1)]
-    Yes_zone = collections.deque()
-    NO_count = 0
-    for i in range(row):
-        for j in range(col):
-            if matirx[i][j] == 'YES':
-                Yes_zone.append((i,j,0))
-            elif matirx[i][j] == 'NO':
-                NO_count += 1
-
-    if not Yes_zone:
-        return -1
-    if NO_count == 0:
-        return 0
-    day = 0
-    while Yes_zone:
-        x,y,day = Yes_zone.popleft()
-        for dx,dy in direction:
-            nx ,ny = x+dx,y+dy
-            if 0<= nx < row and  0<= ny < col:
-                if matirx[nx][ny] == "NO" :
-                    matirx[nx][ny] = "YES"
-                    NO_count -= 1
-                    Yes_zone.append((nx,ny,day + 1))
-
-    # 循环完后，若还有NO存在，说明是在死角
-    if NO_count:
-        return -1
+def solution(m,n):
+    if 3<= m <= 10 and 3<= n <= 100:
+        pass
     else:
-        return day
+        return -1
 
-print(solution(matirx))
+    arr = []
+    for _ in range(m):
+        points = list(map(int,input().split(',')))
+        if any( i<=0 or  i > 10 for i in points):
+            return -1
 
+        arr.append(points)
 
+    q = []
+    
+    for i in range(n):
+        re = [0]*12
+        re[-1] = i+1
+        sum_point = 0
+        for j in range(m):
+            
+            sum_point += arr[j][i]
+            
+            re[11-arr[j][i]] +=1
+        re[0] = sum_point
+
+        if len(q) == 3:
+            heapq.heappushpop(q,re)
+        else:
+            heapq.heappush(q,re)
+    
+    ans = []
+    for i in range(3):
+        ans.append(heapq.heappop(q)[-1])
+    return ','.join(list(map(str,ans[::-1])))
+
+            
+        
+print(solution(m,n))
