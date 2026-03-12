@@ -968,3 +968,588 @@ print(solution(arr,n,k))
 解释：
 
 无法组成长度相同的结果
+
+### 易错点
+注意记得先判断n = 1 ，n = 2的情况。
+max_len = arr[-1] + arr[-2] 只有在n>=2的情况才能进行赋值
+**有些赋值不能想当然，应该考虑该元素是否存在**
+
+```python
+
+# 有一个数组，每次从里面取一个或两个的数，要求每次取出的组合相等，组合可以只有一个数
+# 求最多的组合数
+
+arr = list(map(int,input().split()))
+
+arr = [val for val in arr if val]
+# 本题限制在一层最多两个，复杂度降低很多
+'''
+思路
+枚举一层所有可能的长度，最短为：单根最长；最长为：最长+第二长
+排序，arr[left] + arr [right] == lenght
+假设arr[left] + arr [right] > lenght   由于单调性，则无法找到与arr [right]匹配的组合
+同理 arr[left]
+特例：第一遍遍历的时候，arr[0] == lenght
+注意：可能存在遍历后left和right指向同一根的情况，奇数的情况
+有两种情况：一种每层都是两个积木合在一起；一种若干层是一个积木，即单根最长;其他是两积木
+'''
+# 升序
+
+def solution(arr):
+    n = len(arr)
+    if n == 1:
+        return 1
+    if n == 2 :
+        if arr[0] == arr[1]:
+            return 2
+        else:
+            return 1
+
+    arr.sort()
+    min_len = arr[-1]
+    max_len = arr[-1] + arr[-2]
+    
+    
+    for i in range(min_len,max_len + 1):
+        ans = 0
+        left = 0
+        right = n-1
+        while right >= 0 and arr[right] == i:
+            right -= 1
+            ans += 1
+    
+        while left < right: 
+            if arr[left] + arr[right] == i:
+                ans += 1
+                left += 1
+                right -= 1
+            else:
+                break
+        if left > right:
+            return ans
+    return -1
+print(solution(arr))
+
+
+```
+
+## P00169. 华为od机试—两个字符串间的最短路径
+给定两个字符串，分别为字符串A与字符串B。例如A字符串为ABCABBA，B字符串为CBABAC。可以得到m*n的二维数组，定义原点为(0,0)，终点为(m,n)，水平与垂直的每一条边距离为1,
+从原点(0,0)到(0,A)为水平边，距离为1，从(0,A)到(A,C)为垂直边，距离为1; 假设两个字符串同一位置的两个字符相同则可以作一个斜边、如(A.C)到.B)最短距离为斜边，距离同样为1。作出所有的斜边，则有(0.0)到(B.B)的距离为 1个水平边+1个垂直边+1个斜边 =3。
+根据定义可知，原点到终点的最短距离路径如下图红线标记，最短距离为9;
+
+路径为(0,0)->(A,0)->(A,C)->(B,B)->(C,B)->(A,A)->(B,B)->(B,B)->(A,A)->(A,C)
+
+
+
+
+输入描述
+空格分割的两个字符串A与字符串B，字符串不为”空串”。
+
+字符格式满足正则规则:[A-Z] 字符串长度<= 10000
+输出描述
+原点到终点的最短距离
+
+示例1：
+
+输入：
+
+ABC ABC
+
+输出：
+3
+
+示例2：
+
+输入：
+
+ABCABBA CBABAC
+
+输出：
+9
+
+```python
+import heapq
+s1 , s2 = input().split()
+
+
+def dijstra(min_path,rown,coln,s1,s2):
+
+    ways = [(0,1),(0,-1),(1,0),(-1,0),]
+    pq = [(0,0,0)]
+    while pq :
+        distance,x,y = heapq.heappop(pq)
+        if x == rown -1 and y == coln -1:
+            return distance
+
+        # 比较当前点距离与记录的最小路径，
+        if min_path[x][y] < distance:
+            continue
+        else:
+            min_path[x][y] = distance
+        
+        # 找邻居
+        # 水平和垂直方向
+        for way in ways:
+            dx ,dy = way
+            newx = x + dx
+            newy = y + dy
+            if 0<= newx < rown and 0 <= newy < coln:
+                new_distance = distance + 1
+                if new_distance < min_path[newx][newy]:
+                    min_path[newx][newy] = new_distance
+                heapq.heappush(pq,(new_distance,newx,newy))
+        # 处理斜角
+        
+        newx = x +1
+        newy = y +1
+        if 0<= x + 1 < rown and 0 <= y + 1< coln:
+            if s1[newy-1] == s2[newx-1]:
+                new_distance = distance + 1
+                if new_distance < min_path[newx][newy]:
+                    min_path[newx][newy] = new_distance
+                heapq.heappush(pq,(new_distance,newx,newy))
+    
+    return min_path[rown -1 ][coln -1 ]
+    
+
+def solution(s1,s2):
+    coln = len(s1) + 1
+    rown = len(s2) + 1
+
+    min_path = [ [float('inf')]*coln for _ in range(rown)]
+
+    return dijstra(min_path,rown,coln,s1,s2)
+
+print(solution(s1,s2))
+```
+
+## P00155. 华为od机试—宜居星球改造计划
+2XXX年，人类通过对火星的大气进行宜居改造分析，使得火星已在理论上具备人类宜居的条件，由于技术原因，无法一次性将火星大气全部改造，只能通过局部处理形式，假设将火星待改造的区域为row * column的网格每个网格有3个值，宜居区、可改造区、死亡区，使用YES、NO、NA代替，YES表示该网格已经完成大气改造，NO表示该网格未进行改造，后期可进行改造，NA表示死亡区，不作为判断是否改造完成的宜居，无法穿过
+初始化下，该区域可能存在多个宜居区，并且每个宜居区能同时在每个太阳日单位向上下左右四个方向的相邻格子进行扩散，自动将4个方向相邻的真空区改造成宜居区;请计算这个待改造区域的网格中，可改造区是否能全部变成宜居区，如果可以，则返回改造的太阳日天数，不可以则返回-1。
+
+输入描述:
+输入row*column个网格数据，每个网格值枚举值如下: YES，NO，NA，样例:
+YES YES NO
+NO NO NO
+NA NO YES
+输出描述:
+可改造区是否能全部变成宜居区，如果可以，则返回改造的太阳日天数，不可以则返回-1.
+补充说明:
+grid[i]只有3种情况，YES、NO、NA
+row == grid.length, column == grid[i].length, 1 <= row, column <= 8
+
+示例1
+输入:
+YES YES NO
+NO NO NO
+YES NO NO
+输出:
+
+2
+说明:
+经过2个太阳日，完成宜居改造.
+
+示例2
+输入:
+YES NO NO NO
+
+NO NO NO NO
+NO NO NO NO
+NO NO NO NO
+输出:
+
+6
+说明:
+经过6个太阳日，可完成改造
+
+
+示例3
+输入:
+
+NO NA
+输出:
+
+-1
+
+说明:
+无改造初始条件，无法进行改造
+
+
+示例4
+输入:
+YES NO NO YES
+
+NO NO YES NO
+
+NO YES NA NA
+
+YES NO NA NO
+输出:
+
+-1
+说明:
+
+右下角的区域，被周边三个死亡区挡住，无法实现改造
+### 易错点
+1. 特殊情况：没有YES；没有NO的情况
+2. 多源扩散可以把层级跟随记录到栈里面，与记录路径一样
+
+```python
+import sys
+import collections
+matirx = []
+for line in sys.stdin.readlines():
+    matirx.append(line.strip().split())
+
+
+def solution(matirx):
+    row = len(matirx)
+    col = len(matirx[0])
+    direction = [(1,0),(0,1),(-1,0),(0,-1)]
+    Yes_zone = collections.deque()
+    NO_count = 0
+    for i in range(row):
+        for j in range(col):
+            if matirx[i][j] == 'YES':
+                Yes_zone.append((i,j,0))
+            elif matirx[i][j] == 'NO':
+                NO_count += 1
+    # 处理特殊情况
+    if not Yes_zone:
+        return -1
+    if NO_count == 0:
+        return 0
+    day = 0
+    while Yes_zone:
+        x,y,day = Yes_zone.popleft()
+        for dx,dy in direction:
+            nx ,ny = x+dx,y+dy
+            if 0<= nx < row and  0<= ny < col:
+                if matirx[nx][ny] == "NO" :
+                    matirx[nx][ny] = "YES"
+                    NO_count -= 1
+                    Yes_zone.append((nx,ny,day + 1))
+
+    # 循环完后，若还有NO存在，说明是在死角
+    if NO_count:
+        return -1
+    else:
+        return day
+
+print(solution(matirx))
+```
+
+## P00110. 华为od机试—比赛 / 评委评分
+一个有N个选手参加比赛，选手编号为1~N（3<=N<=100），有M（3<=M<=10）个评委对选手进行打分。
+打分规则为每个评委对选手打分，最高分10分，最低分1分。
+请计算得分最多的3位选手的编号。
+如果得分相同，则得分高分值最多的选手排名靠前
+(10分数量相同，则比较9分的数量，以此类推，用例中不会出现多个选手得分完全相同的情况)。
+输入描述:
+
+第一行为半角逗号分割的两个正整数，第一个数字表示M（3<=M<=10）个评委，第二个数字表示N（3<=N<=100）个选手。
+第2到M+1行是半角逗号分割的整数序列，表示评委为每个选手的打分，0号下标数字表示1号选手分数，1号下标数字表示2号选手分数，依次类推。
+输出描述:
+
+选手前3名的编号。
+注：若输入为异常，输出-1，如M、N、打分不在范围内。
+示例1   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+4,5
+10,6,9,7,6
+9,10,6,7,5
+8,10,6,5,10
+9,10,8,4,9
+
+输出
+
+2,1,5
+
+说明
+
+第一行代表有4个评委，5个选手参加比赛
+
+矩阵代表是4*5，每个数字是选手的编号，每一行代表一个评委对选手的打分排序，
+
+2号选手得分36分排第1，1号选手36分排第2，5号选手30分(2号10分值有3个，1号10分值只有1个，所以2号排第一)
+
+示例2   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+2,5
+
+7,3,5,4,2
+
+8,5,4,4,3
+
+输出
+
+-1
+
+说明
+
+只有2个评委，要求最少为3个评委
+示例3   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+4,2
+
+8,5
+
+5,6
+
+10,4
+
+8,9
+
+输出
+
+-1
+
+说明
+
+只有2名选手参加，要求最少为3名
+
+示例4   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+4,5
+
+11,6,9,7,8
+
+9,10,6,7,8
+
+8,10,6,9,7
+
+9,10,8,6,7
+
+输出
+
+-1
+
+说明
+
+第一个评委给第一个选手打分11，无效分数
+### 思路
+
+由于数据较少直接排序即可；有个坑，选手的编号的排序升序，即取反。
+
+```python
+import heapq
+m,n = list(map(int,input().split(',')))
+
+
+def solution(m,n):
+    if 3<= m <= 10 and 3<= n <= 100:
+        pass
+    else:
+        return -1
+
+    arr = []
+    for _ in range(m):
+        points = list(map(int,input().split(',')))
+        if any( i<=0 or  i > 10 for i in points):
+            return -1
+
+        arr.append(points)
+
+    q = []
+    
+    for i in range(n):
+        score = [0] * 10
+        p_num = i+1
+        sum_point = 0
+        for j in range(m):
+            sum_point += arr[j][i]
+            score[arr[j][i]-1] += 1
+        # 
+        q.append([sum_point]+score[::-1]+[-i-1])
+    
+    l = sorted(q,reverse= True)
+
+    return ','.join([str(-i[-1]) for i in l[:3]])
+    
+
+print(solution(m,n))
+
+```
+
+## P00467. 华为od机试—运维日志排序
+运维工程师采集到某产品线网运行一天产生的日志n条
+
+现需根据日志时间先后顺序对日志进行排序
+
+日志时间格式为H:M:S.N
+
+H表示小时(0~23)
+
+M表示分钟(0~59)
+
+S表示秒(0~59)
+
+N表示毫秒(0~999)
+
+时间可能并没有补全
+
+也就是说
+
+01:01:01.001也可能表示为1:1:1.1
+
+输入描述
+
+第一行输入一个整数n表示日志条数，1<=n<=100000
+接下来n行输入n个时间
+输出描述
+
+按时间升序排序之后的时间
+如果有两个时间表示的时间相同
+则保持输入顺序
+示例1   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+2
+
+01:41:8.9
+
+1:1:09.211
+
+输出
+
+1:1:09.211
+
+01:41:8.9
+
+示例2   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+3
+
+23:41:08.023
+
+1:1:09.211
+
+08:01:22.0
+
+输出
+
+1:1:09.211
+
+08:01:22.0
+
+23:41:08.023
+
+示例3   输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+2
+
+22:41:08.023
+
+22:41:08.23
+
+输出
+
+22:41:08.023
+
+22:41:08.23
+
+注：时间相同保持输入顺序
+
+### 思路
+直接分块保存在数组里，排序
+如果不行可以按实际单位转化为毫秒进行比较
+```python
+n = int(input())
+
+list1 = []
+for _ in range(n):
+    s = input()
+    H,M,SN = s.split(":")
+    S,N = SN.split(".")
+    arr = list(map(int,[H,M,S,N]))
+    list1.append([arr,s])
+
+list1.sort(key=lambda x:x[0])
+for i in list1:
+    print(i[1])
+```
+## P00357. 华为od机试—数组连续和
+给定一个含有N个正整数的数组, 求出有多少个连续区间（包括单个正整数）, 它们的和大于等于x。
+
+输入描述
+
+第一行两个整数N x（0 < N <= 100000, 0 <= x <= 10000000)
+
+第二行有N个正整数（每个正整数小于等于100)。
+
+输出描述
+
+输出一个整数，表示所求的个数。
+
+注意：此题对效率有要求，暴力解法通过率不高，请考虑高效的实现方式。
+
+示例1 输入输出示例仅供调试，后台判题数据一般不包含示例
+
+输入
+
+3 7
+3 4 7
+
+输出
+
+4
+
+样例解释
+
+第一行的3表示第二行数组输入3个数，第一行的7是比较数，用于判断连续数组是否大于该数；
+
+组合为 3 + 4; 3 + 4 + 7; 4 + 7; 7; 都大于等于指定的7；所以共四组。
+
+示例2 输入输出示例仅供调试，后台判题数据一般不包含示例
+
+10 10000
+
+1 2 3 4 5 6 7 8 9 10
+
+样例解释
+
+所有元素的和小于10000，所以返回0。
+
+### 易错点
+循环好像没法正确处理x=0的情况
+```python
+n,x = list(map(int,input().split()))
+arr = list(map(int,input().split()))
+
+if x == 0:
+    print((n+1)*n//2)
+else:
+    pre = [0] * (n+1)
+    for i in range(n):
+        pre[i+1] = pre[i] + arr[i]
+
+    left = 0
+    right = 0
+    total = 0
+    ans = 0
+    while right< n:
+        win_sum = pre[right+1] - pre[left]
+        if win_sum < x:
+            right += 1
+        else:
+            ans += n-right
+            left += 1
+    print(ans)
+        
+```
+
+
